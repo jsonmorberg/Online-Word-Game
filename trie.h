@@ -1,3 +1,5 @@
+//https://www.geeksforgeeks.org/trie-insert-and-search/
+//TODO change bool types to int 
 #include <stdbool.h>
 #define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
 
