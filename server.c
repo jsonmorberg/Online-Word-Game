@@ -22,11 +22,11 @@
     //          *not been used
     //          *in dictionary
     //          *only uses board letters 
-    //          Send Word to Next Player
+    //          Send Word + Length to Next Player and Notify
     //      Invalid Word/Out of Time
     //          Next Player gains point
     //          Round Increments
-    //Repeat 3 Times
+    //Loop Until one Player scores 3 Points
     //Close Connection
 
 
