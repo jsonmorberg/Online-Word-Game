@@ -1,11 +1,20 @@
 Write you assignment plan here. Refer to the assignment PDF for details. Do not change this file name.
-
+//Cameron Moon, Jayson Morberg
 
 1) Write a one paragraph summary of the program in your own words.  What is being asked of you?  What will you implement in this assignment?
 
-2) What you anticipate being the most challenging aspect of the assignment?
+    play a word guessing game involving multiple clients, and time limits. The game is more complex wherein two players take turns guessing valid words from a collection of random letters and scoring is applied. A trie type data structure will also be applied.
 
-3) Give a list of at least three resources you plan to draw from if you get stuck on something.
+2) What do you anticipate being the most challenging aspect of the assignment?
+
+    the more complex networking part. specifically managing two clients together inside of a single game
+
+3) Give a list of at least three resources you plan to draw from if you get stuck on something.i
+
+    lecture slides, lecture videos, the textbook
 
 4) What is your plan for meeting to finish this program (e.g. ``every Monday, Wednesday and Friday from 3pm-5pm until it's done.).
+
+    work together when time permits on weekdays, typically after 4:00 and using discord to stream whoever is currently programming.
+
 
