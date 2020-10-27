@@ -1,3 +1,5 @@
+//SOURCE https://www.geeksforgeeks.org/trie-insert-and-search/
+//TODO change bool types to int 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
