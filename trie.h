@@ -1,17 +1,28 @@
+#include <stdbool.h>
+#define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
 
+// Alphabet size (# of symbols)
+#define ALPHABET_SIZE (26)
 
-typedef struct node {
+// Converts key current character into index
+// use only 'a' through 'z' and lower case
+#define CHAR_TO_INDEX(c) ((int)c - (int)'a')
 
-    // TODO: Define fields of the node
+struct TrieNode 
+{ 
+    struct TrieNode *children[ALPHABET_SIZE]; 
+  
+    // isEndOfWord is true if the node represents 
+    // end of a word 
+    bool isEndOfWord; 
+}; 
+  
 
-} trieNode;
-
-// TODO: Implement the following functions in trie.c
-trieNode *trieCreate(void);  // Returns a pointer to an empty trie
-int trieInsert(trieNode *trie, char *word);  // Returns 1 on success, 0 on failure
-int trieSearch(trieNode *trie, char *word);  // Returns 1 if word exists in trie, otherwise returns 0
+struct TrieNode *getNode(void);  // Returns a pointer to an empty trie
+void insert(struct TrieNode *root, const char *key);
+bool search(struct TrieNode *root, const char *key);
 
 /*
- * In addition to the three functions above, you may need/want to define and implement additional functions.
- * Define them below.
+ * In addition to the three functions above, you may need/want to define and implement additional functions. * Define them below.
  */
+
