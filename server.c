@@ -1,39 +1,36 @@
-/* server.c - code for server. Do not rename this file */
-//test
-#include <stdio.h>
-#include <stdbool.h>
-#include "trie.h"
-int main( int argc, char **argv) {
-    //set up tree
+    //Initialize Storage for networking composition and Trie for dictionary
     //Connection setup
-    //  tcp connection 
-    //  fork
-    //  send game start data
-    //Game start
-    //  begin when players ==2 
-    //  end on premature disconection
+    //  Accept TCP Connection 
+    //  Fork
+    //  Send Game Information and Start
+    //
+    //Game Start
+    //  Start when there are two Players
+    //  End on Premature Disconnection
+    //
     //Rounds
-    //  genorate random chars 
-    //  send round info
-    //  loop turns
+    //  Generate Random Characters
+    //  Send Round Information to Clients
+    //  Loop Turns for each Player
+    //
     //Turns
-    //  tell player whos turn it is
-    //  guess word in N seconds or wait 
-    //  recives word
-    //  checks if word valid
-    //      valid words
-    //          not been used
-    //          in dic
-    //          only useboard letter 
-    //       send word to inactive player
-    //  restart when invalid word or timeout accurs
-    //repead 3 rounds
-    //close down 
+    //  Notify Player Turn
+    //  Wait N Seconds for Word
+    //  Receive Word (Or Lack of Word)
+    //  Check validity of Word
+    //      Valid Word
+    //          *not been used
+    //          *in dictionary
+    //          *only uses board letters 
+    //          Send Word to Next Player
+    //      Invalid Word/Out of Time
+    //          Next Player gains point
+    //          Round Increments
+    //Repeat 3 Times
+    //Close Connection
 
 
-//functions
-//loadTree: will add all the words from dic into tree
+//Functions
+//loadTree: will add all the words from dictionary into tree
 //createRandomCahrs: create random chars for round
 //checkWord: checks if word is valid
-    return 0;
-}
