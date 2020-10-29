@@ -1,0 +1,18 @@
+image: gcc
+
+stages:
+  - compile
+  - test
+
+compile:
+  stage: compile
+  script:
+    - make
+
+trie:
+  stage: test
+  script:
+    - cp /home/cs367/p2/tests/* .
+    - make clean
+    - make test
+    - ./test trie
