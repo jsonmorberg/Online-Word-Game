@@ -21,7 +21,7 @@ typedef struct node
   
 
 trieNode *trieCreate(void);  // Returns a pointer to an empty trie
-void trieInsert(trieNode *root, const char *key);
+int trieInsert(trieNode *root, const char *key);
 int trieSearch(trieNode *root, const char *key);
 
 

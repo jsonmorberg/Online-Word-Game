@@ -25,11 +25,15 @@ trieNode *trieCreate(void)
     return pNode; 
 }
 
-void trieInsert(trieNode *root, const char *key)
+int trieInsert(trieNode *root, const char *key)
 {
     int level;
     int length = strlen(key);
     int index;
+
+    if(trieSearch(root, key)){
+        return 0;
+    }
 
     trieNode *pCrawl = root;
 
@@ -44,6 +48,7 @@ void trieInsert(trieNode *root, const char *key)
 
     // mark last node as leaf
     pCrawl->isEndOfWord = true;
+    return 1;
 }
 
 // Returns true if key presents in trie, else false
