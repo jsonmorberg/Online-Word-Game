@@ -12,7 +12,7 @@
 
 typedef struct node 
 { 
-    trieNode  *children[ALPHABET_SIZE]; 
+    struct node *children[ALPHABET_SIZE]; 
   
     // isEndOfWord is true if the node represents 
     // end of a word 
