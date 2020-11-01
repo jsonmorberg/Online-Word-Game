@@ -22,8 +22,13 @@ int main(int argc, char **argv) {
 	int alen; /* length of address */
 	int optval = 1; /* boolean value when we set socket option */
 	char buf[1000]; /* buffer for string the server sends */
-
-	if( argc != 2 ) {
+    uint8_t boardSize;
+    uint8_t seconds;
+    char * wordPath;
+    uint8_t round;
+    uint8_t p1Score;
+    uint8_t p2Score;
+	if( argc != 5 ) {
 		fprintf(stderr,"Error: Wrong number of arguments\n");
 		fprintf(stderr,"usage:\n");
 		fprintf(stderr,"./server server_port\n");
@@ -33,8 +38,10 @@ int main(int argc, char **argv) {
 	memset((char *)&sad,0,sizeof(sad)); /* clear sockaddr structure */
 	sad.sin_family = AF_INET; /* set family to Internet */
 	sad.sin_addr.s_addr = INADDR_ANY; /* set the local IP address */
-
-
+    
+    wordPath = argv[4];
+    seconds = atoi(argv[3]);
+    boardSize = atoi(argv[2]);
 	port = atoi(argv[1]); /* convert argument to binary */
 	if (port > 0) { /* test for illegal value */
 		sad.sin_port = htons((u_short)port);
@@ -74,20 +81,46 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"Error: Listen failed\n");
 		exit(EXIT_FAILURE);
 	}
-
 	while (1) {
 		alen = sizeof(cad1);
 		if ( (sd2=accept(sd, (struct sockaddr *)&cad1, &alen)) < 0) {
 			fprintf(stderr, "Error: Accept failed\n");
 			exit(EXIT_FAILURE);
 		}
-		close(sd2);
-
+        uint8_t player = 1;
+        send(sd2,&player,sizeof(uint8_t),0);
+        send(sd2,&boardSize,sizeof(uint8_t),0);
+        send(sd2,&seconds,sizeof(uint8_t),0);
+        //send player 1
+        //send boardnum
+        //send secs
         alen = sizeof(cad2);
 		if ( (sd3=accept(sd, (struct sockaddr *)&cad2, &alen)) < 0) {
 			fprintf(stderr, "Error: Accept failed\n");
 			exit(EXIT_FAILURE);
 		}
+        player = 2;
+        send(sd3,&player,sizeof(uint8_t),0);
+        send(sd3,&boardSize,sizeof(uint8_t),0);
+        send(sd3,&seconds,sizeof(uint8_t),0);
+        round = 3;
+        //GAME START
+        send(sd2, &round, sizeof(uint8_t), 0);
+        send(sd3, &round, sizeof(uint8_t), 0);
+            
+        recv(sd2, &p1Score, sizeof(uint8_t),0);
+        recv(sd3, &p2Score, sizeof(uint8_t), 0);
+        send(sd2, &p2Score, sizeof(uint8_t), 0);
+        send(sd3, &p1Score, sizeof(uint8_t), 0);
+        //send board
+        char board[boardSize];
+        for(int i = 0; i < boardSize; i++){
+            board[i] = 'a';
+        }
+        send(sd2, &board, sizeof(board), 0);
+        send(sd3, &board, sizeof(board), 0);
+        
+        close(sd2);
 		close(sd3);
 	}
 }
