@@ -6,11 +6,11 @@
 #include "trie.h"
  
 // Returns new trie node (initialized to NULLs) 
-struct trieNode *trieCreate(void) 
+trieNode *trieCreate(void) 
 { 
-    struct trieNode *pNode = NULL; 
+    trieNode *pNode = NULL; 
   
-    pNode = (struct trieNode *)malloc(sizeof(struct trieNode)); 
+    pNode = (trieNode *)malloc(sizeof(trieNode)); 
   
     if (pNode) 
     { 
@@ -25,13 +25,13 @@ struct trieNode *trieCreate(void)
     return pNode; 
 }
 
-void trieInsert(struct trieNode *root, const char *key)
+void trieInsert(trieNode *root, const char *key)
 {
     int level;
     int length = strlen(key);
     int index;
 
-    struct trieNode *pCrawl = root;
+    trieNode *pCrawl = root;
 
     for (level = 0; level < length; level++)
     {
@@ -47,12 +47,12 @@ void trieInsert(struct trieNode *root, const char *key)
 }
 
 // Returns true if key presents in trie, else false
-int trieSearch(struct trieNode *root, const char *key)
+int trieSearch(trieNode *root, const char *key)
 {
     int level;
     int length = strlen(key);
     int index;
-    struct trieNode *pCrawl = root;
+    trieNode *pCrawl = root;
 
     for (level = 0; level < length; level++)
     {
