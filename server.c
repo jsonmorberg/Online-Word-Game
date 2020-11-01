@@ -8,9 +8,47 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include "trie.h"
 
 #define QLEN 6 /* size of request queue */
 int visits = 0; /* counts client connections */
+
+char* generateBoard(int boardSize){
+
+    srand(time(NULL));
+    char abc[26]="abcdefghijklmnopqrstuvwxyz";
+    char vowel[5]="aeiou";
+
+    trieNode *usedChars = trieCreate();
+    char *board;
+    board = malloc(boardSize);
+
+    for(int i = 0; i < boardSize; i++){
+
+        char letter = abc[rand() % (sizeof(abc) - 1)];
+
+        if(!trieSearch(usedChars, &letter)){
+            board[i] = letter;
+            trieInsert(usedChars, &letter);
+        }else{
+            i--;
+        }
+    }
+
+    int vowelFlag = 0;
+    for(int i = 0; i < boardSize-1; i++){
+        if(board[i] == 'a' || board[i] == 'e'|| board[i] == 'i'|| board[i] == 'o'|| board[i] == 'u'){
+            vowelFlag = 1;
+        }
+    }
+
+    if(!vowelFlag){
+        board[boardSize-1] = vowel[rand() % (sizeof(vowel) - 1)];
+    }
+
+    return board;
+}
 
 int main(int argc, char **argv) {
 	struct protoent *ptrp; /* pointer to a protocol table entry */
