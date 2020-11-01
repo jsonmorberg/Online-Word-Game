@@ -10,9 +10,9 @@
 // use only 'a' through 'z' and lower case
 #define CHAR_TO_INDEX(c) ((int)c - (int)'a')
 
-struct TrieNode 
+struct trieNode 
 { 
-    struct TrieNode *children[ALPHABET_SIZE]; 
+    struct trieNode  *children[ALPHABET_SIZE]; 
   
     // isEndOfWord is true if the node represents 
     // end of a word 
@@ -20,11 +20,8 @@ struct TrieNode
 }; 
   
 
-struct TrieNode *getNode(void);  // Returns a pointer to an empty trie
-void insert(struct TrieNode *root, const char *key);
-bool search(struct TrieNode *root, const char *key);
+struct trieNode *trieCreate(void);  // Returns a pointer to an empty trie
+void trieInsert(struct trieNode *root, const char *key);
+int trieSearch(struct trieNode *root, const char *key);
 
-/*
- * In addition to the three functions above, you may need/want to define and implement additional functions. * Define them below.
- */
 

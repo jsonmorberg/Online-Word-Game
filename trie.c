@@ -1,26 +1,16 @@
 //SOURCE https://www.geeksforgeeks.org/trie-insert-and-search/
-//TODO change bool types to int 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "trie.h"
-/*
-struct TrieNode 
-{ 
-    struct TrieNode *children[ALPHABET_SIZE]; 
-  
-    // isEndOfWord is true if the node represents 
-    // end of a word 
-    bool isEndOfWord; 
-}; 
- */ 
+ 
 // Returns new trie node (initialized to NULLs) 
-struct TrieNode *getNode(void) 
+struct trieNode *trieCreate(void) 
 { 
-    struct TrieNode *pNode = NULL; 
+    struct trieNode *pNode = NULL; 
   
-    pNode = (struct TrieNode *)malloc(sizeof(struct TrieNode)); 
+    pNode = (struct trieNode *)malloc(sizeof(struct trieNode)); 
   
     if (pNode) 
     { 
@@ -35,19 +25,19 @@ struct TrieNode *getNode(void)
     return pNode; 
 }
 
-void insert(struct TrieNode *root, const char *key)
+void trieInsert(struct trieNode *root, const char *key)
 {
     int level;
     int length = strlen(key);
     int index;
 
-    struct TrieNode *pCrawl = root;
+    struct trieNode *pCrawl = root;
 
     for (level = 0; level < length; level++)
     {
         index = CHAR_TO_INDEX(key[level]);
         if (!pCrawl->children[index]){
-            pCrawl->children[index] = getNode();
+            pCrawl->children[index] = trieCreate();
         }
         pCrawl = pCrawl->children[index];
     }
@@ -57,19 +47,19 @@ void insert(struct TrieNode *root, const char *key)
 }
 
 // Returns true if key presents in trie, else false
-bool search(struct TrieNode *root, const char *key)
+int trieSearch(struct trieNode *root, const char *key)
 {
     int level;
     int length = strlen(key);
     int index;
-    struct TrieNode *pCrawl = root;
+    struct trieNode *pCrawl = root;
 
     for (level = 0; level < length; level++)
     {
         index = CHAR_TO_INDEX(key[level]);
 
         if (!pCrawl->children[index])
-            return false;
+            return 0;
 
         pCrawl = pCrawl->children[index];
     }
