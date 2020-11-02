@@ -9,6 +9,42 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+int validWord(trieNode* usedWords, char* word, char* board){
+	char newBoard[sizeof(board)];
+	size_t destination_size = sizeof(board);
+
+	strncpy(newBoard, board, destination_size);
+	newBoard[destination_size] = '\0';
+
+    if(!trieSearch(dictionary, word)){
+		return 1;
+	}
+
+	if(trieSearch(usedWords, word)){
+		return 1;
+	}
+
+	for(int i = 0; i < strlen(word); i++){
+		char wordChar = word[i];
+		int flag = 0;
+
+		for(int j = 0; j < strlen(newBoard); j++){
+            if(wordChar == newBoard[j]){
+                flag = 1;
+                newBoard[j] = ' ';
+                printf("%s\n", newBoard);
+                break;
+            }
+        }
+
+        if(flag == 0){
+            return 0;
+        }
+	}
+
+    return 1;
+}
+
 int main( int argc, char **argv) {
 	struct hostent *ptrh; /* pointer to a host table entry */
 	struct protoent *ptrp; /* pointer to a protocol table entry */
