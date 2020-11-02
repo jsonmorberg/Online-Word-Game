@@ -20,20 +20,11 @@ char* generateBoard(int boardSize){
     char abc[26]="abcdefghijklmnopqrstuvwxyz";
     char vowel[5]="aeiou";
 
-    trieNode *usedChars = trieCreate();
     char *board;
     board = malloc(boardSize);
 
     for(int i = 0; i < boardSize; i++){
-
-        char letter = abc[rand() % (sizeof(abc) - 1)];
-
-        if(!trieSearch(usedChars, &letter)){
-            board[i] = letter;
-            trieInsert(usedChars, &letter);
-        }else{
-            i--;
-        }
+        board[i] = abc[rand() % (sizeof(abc) - 1)];
     }
 
     int vowelFlag = 0;
