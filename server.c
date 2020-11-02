@@ -20,14 +20,15 @@ int main(int argc, char **argv) {
 	int sd, sd2, sd3; /* socket descriptors */
 	int port; /* protocol port number */
 	int alen; /* length of address */
-	int optval = 1; /* boolean value when we set socket option */
-	char buf[1000]; /* buffer for string the server sends */
+    int optval = 1;
     uint8_t boardSize;
     uint8_t seconds;
     char * wordPath;
     uint8_t round;
     uint8_t p1Score;
     uint8_t p2Score;
+    uint8_t guessSize;
+    char guess[1000];
 	if( argc != 5 ) {
 		fprintf(stderr,"Error: Wrong number of arguments\n");
 		fprintf(stderr,"usage:\n");
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
         send(sd3,&seconds,sizeof(uint8_t),0);
         round = 3;
         //GAME START
+        while(1){ 
         send(sd2, &round, sizeof(uint8_t), 0);
         send(sd3, &round, sizeof(uint8_t), 0);
             
@@ -119,7 +121,57 @@ int main(int argc, char **argv) {
         }
         send(sd2, &board, sizeof(board), 0);
         send(sd3, &board, sizeof(board), 0);
-        
+        //START TURN
+        //send whos active
+        char yes = 'Y';
+        char no = 'N';
+        uint8_t win = 1;
+        uint8_t lose = 0;
+        uint8_t turn = round;
+        while(1){
+            if (turn % 2 == 0){
+                send(sd2, &no, sizeof('Y'), 0);
+                send(sd3, &yes, sizeof('Y'),0);
+                recv(sd3, &guessSize, sizeof(uint8_t), 0);
+                recv(sd3, guess, guessSize,0);
+                guess[guessSize] = '\0';
+                if(strcmp(guess, "cameron") == 0){//IF WORD IS VALID 
+                    send(sd3, &win, sizeof(uint8_t),0);
+                    send(sd2, &guessSize, sizeof(uint8_t), 0);
+                    send(sd2, &guess, guessSize, 0);
+                }else{
+                    send(sd3, &lose, sizeof(uint8_t), 0);
+                    send(sd2, &lose, sizeof(uint8_t), 0);
+                    round--;
+                    break;
+                }
+                //recive guess
+                //if guess valid
+                //  send 1 to active
+                //  send word to inactive
+                
+            }else{
+                send(sd2, &yes, sizeof('Y'), 0);
+                send(sd3, &no, sizeof('Y'),0);
+                recv(sd2, &guessSize, sizeof(uint8_t), 0);
+                recv(sd2, guess, guessSize,0);
+                guess[guessSize] = '\0';
+                if(strcmp(guess,"cameron") == 0){//IF WORD IS VALID 
+                    send(sd2, &win, sizeof(uint8_t),0);
+                    send(sd3, &guessSize, sizeof(uint8_t), 0);
+                    send(sd3, &guess, guessSize, 0);
+                }else{
+                    send(sd2, &lose, sizeof(uint8_t), 0);
+                    send(sd3, &lose, sizeof(uint8_t), 0);
+                    round--;
+                    break;
+                }
+             } 
+
+        turn++;    
+            
+        }
+        }//end of while
         close(sd2);
 		close(sd3);
 	}
