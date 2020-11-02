@@ -13,6 +13,7 @@
 
 #define QLEN 6 /* size of request queue */
 int visits = 0; /* counts client connections */
+trieNode *dictionary;
 
 char* generateBoard(int boardSize){
 
@@ -64,6 +65,20 @@ int main(int argc, char **argv) {
 		fprintf(stderr,"./server server_port\n");
 		exit(EXIT_FAILURE);
 	}
+
+    dictionary = trieCreate();
+
+    FILE* filePointer;
+    int bufferLength = 1000;
+    char buffer[bufferLength];
+
+    filePointer = fopen("twl06.txt", "r");
+
+    while(fgets(buffer, bufferLength, filePointer)) {
+        trieInsert(dictionary, buffer);
+    }
+
+    fclose(filePointer);
 
 	memset((char *)&sad,0,sizeof(sad)); /* clear sockaddr structure */
 	sad.sin_family = AF_INET; /* set family to Internet */
