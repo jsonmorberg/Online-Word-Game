@@ -4,7 +4,7 @@
 #define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
 
 // Alphabet size (# of symbols)
-#define ALPHABET_SIZE (26)
+#define ALPHABET_SIZE (100)
 
 // Converts key current character into index
 // use only 'a' through 'z' and lower case

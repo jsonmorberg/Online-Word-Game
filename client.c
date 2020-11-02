@@ -16,14 +16,8 @@ int main( int argc, char **argv) {
 	int sd; /* socket descriptor */
 	int port; /* protocol port number */
 	char *host; /* pointer to host name */
-	int n; /* number of characters read */
 	char buf[1000]; /* buffer for data from the server */
-    uint8_t boardSize;
-    uint8_t seconds;
-    uint8_t player;
-    uint8_t round;
-    uint8_t score;
-    uint8_t opScore;
+
 	memset((char *)&sad,0,sizeof(sad)); /* clear sockaddr structure */
 	sad.sin_family = AF_INET; /* set family to Internet */
 
@@ -73,23 +67,94 @@ int main( int argc, char **argv) {
 		fprintf(stderr,"connect failed\n");
 		exit(EXIT_FAILURE);
 	}
-    recv(sd,&player,sizeof(uint8_t),0);
-    recv(sd,&boardSize,sizeof(uint8_t),0);
-    recv(sd,&seconds,sizeof(uint8_t),0);
-    printf("%d, %d, %d\n", player,  boardSize, seconds);
-    score = 69;
-    //GAME START
-    recv(sd, &round, sizeof(uint8_t), 0);
-    printf("starting round %d\n", round);
-    send(sd, &score, sizeof(uint8_t), 0);
-    recv(sd, &opScore, sizeof(uint8_t), 0);
-    printf("my = %d op = %d\n",score, opScore);
-    char board[boardSize];
-    recv(sd, board, boardSize,0);
-    board[boardSize] = '\0';
-    printf("%s\n", board);
-    //recive board
-	close(sd);
-	exit(EXIT_SUCCESS);
+
+	char player;
+	recv(sd, &player, sizeof(char), 0);
+
+	uint8_t boardSize;
+	recv(sd,&boardSize,sizeof(boardSize),0);
+
+	uint8_t seconds;
+	recv(sd,&seconds,sizeof(seconds),0);
+
+	if(player == '1'){
+		printf("You are Player 1... the game will begin when Player 2 joins...\n");
+	}else{
+		printf("You are Player 2...\n");
+	}
+
+	printf("Board size: %d\n", boardSize);
+	printf("Seconds per turn: %d\n", seconds);
+
+	uint8_t playerScore1;
+	uint8_t playerScore2;
+	uint8_t round;
+	char buffer[1000];
+
+	for(;;){
+		recv(sd, &playerScore1, sizeof(playerScore1), 0);
+		recv(sd, &playerScore2, sizeof(playerScore2), 0);
+		recv(sd, &round, sizeof(round), 0);
+		recv(sd, buffer, boardSize, 0);
+
+		printf("Round is %d...\n", round);
+		printf("Score is %d-%d\n", playerScore1, playerScore2);
+		printf("Board: ");
+
+		for(int i = 0; i < boardSize; i++){
+			printf("%c ", buffer[i]);
+		}
+		printf("\n");
+
+		char turn;
+		recv(sd, &turn, sizeof(char), 0);
+
+		int turnFlag = 0;
+
+		if(turn == 'Y'){
+			turnFlag = 1;
+		}
+
+		for(;;){
+			char charbuf[1000];
+			uint8_t guessSize;
+    		uint8_t outcome;
+
+			if(turnFlag){
+
+				printf("Your turn, enter word: ");
+                scanf("%s", charbuf);
+
+                guessSize = strlen(charbuf);
+
+                send(sd, &guessSize, sizeof(uint8_t), 0);
+                send(sd, &charbuf, guessSize,0);
+
+                recv(sd, &outcome, sizeof(uint8_t),0);
+                if(outcome){
+                    printf("Valid word!\n");
+					turnFlag = 0;
+                }else{
+                    printf("Invalid Word\n");
+                    break;
+                }
+
+			}else{
+
+				printf("Please wait for opponent to enter word ...\n");
+                recv(sd,&guessSize, sizeof(uint8_t),0);
+                if(guessSize == 0){
+                    printf("Opponent lost the round!\n");
+                    break;
+                }else{
+                    recv(sd, buf, guessSize, 0);
+                    buf[guessSize] = '\0';
+					printf("Opponent entered: %s", buf);
+					turnFlag = 1;
+				}
+			}
+		}
+	
+	}
 }
 

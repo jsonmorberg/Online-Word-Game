@@ -69,6 +69,6 @@ int trieSearch(trieNode *root, const char *key)
         pCrawl = pCrawl->children[index];
     }
 
-    return (pCrawl != NULL && pCrawl->isEndOfWord);
+    return (pCrawl != NULL);
 } 
 
