@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+
 int main( int argc, char **argv) {
 	struct hostent *ptrh; /* pointer to a host table entry */
 	struct protoent *ptrp; /* pointer to a protocol table entry */
@@ -68,15 +69,17 @@ int main( int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	//Recieve Player #, Board Size, and Seconds per Round
 	char player;
 	recv(sd, &player, sizeof(char), 0);
 
 	uint8_t boardSize;
-	recv(sd,&boardSize,sizeof(boardSize),0);
+	recv(sd,&boardSize,sizeof(uint8_t),0);
 
 	uint8_t seconds;
-	recv(sd,&seconds,sizeof(seconds),0);
+	recv(sd,&seconds,sizeof(uint8_t),0);
 
+	//Print Game info
 	if(player == '1'){
 		printf("You are Player 1... the game will begin when Player 2 joins...\n");
 	}else{
@@ -86,19 +89,29 @@ int main( int argc, char **argv) {
 	printf("Board size: %d\n", boardSize);
 	printf("Seconds per turn: %d\n", seconds);
 
-	uint8_t playerScore1;
-	uint8_t playerScore2;
+	uint8_t p1Score;
+	uint8_t p2Score;
 	uint8_t round;
 	char buffer[1000];
 
+	//LOOP FOR ROUNDS
 	for(;;){
-		recv(sd, &playerScore1, sizeof(playerScore1), 0);
-		recv(sd, &playerScore2, sizeof(playerScore2), 0);
-		recv(sd, &round, sizeof(round), 0);
+
+		//Get scores, round # and board
+		recv(sd, &p1Score, sizeof(uint8_t), 0);
+		recv(sd, &p2Score, sizeof(uint8_t), 0);
+		
+		if(p1Score == 3 || p2Score == 3){
+			break;
+		}
+
+		recv(sd, &round, sizeof(uint8_t), 0);
 		recv(sd, buffer, boardSize, 0);
 
+		//Print round info
+		printf("\n");
 		printf("Round is %d...\n", round);
-		printf("Score is %d-%d\n", playerScore1, playerScore2);
+		printf("Score is %d-%d\n", p1Score, p2Score);
 		printf("Board: ");
 
 		for(int i = 0; i < boardSize; i++){
@@ -106,18 +119,18 @@ int main( int argc, char **argv) {
 		}
 		printf("\n");
 
+		//Receive turn
 		char turn;
 		recv(sd, &turn, sizeof(char), 0);
 
 		int turnFlag = 0;
-
 		if(turn == 'Y'){
 			turnFlag = 1;
 		}
 
 		for(;;){
 			char charbuf[1000];
-			uint8_t guessSize;
+			uint8_t wordSize;
     		uint8_t outcome;
 
 			if(turnFlag){
@@ -125,10 +138,10 @@ int main( int argc, char **argv) {
 				printf("Your turn, enter word: ");
                 scanf("%s", charbuf);
 
-                guessSize = strlen(charbuf);
+                wordSize = strlen(charbuf);
 
-                send(sd, &guessSize, sizeof(uint8_t), 0);
-                send(sd, &charbuf, guessSize,0);
+                send(sd, &wordSize, sizeof(uint8_t), 0);
+                send(sd, charbuf, wordSize,0);
 
                 recv(sd, &outcome, sizeof(uint8_t),0);
                 if(outcome){
@@ -142,19 +155,33 @@ int main( int argc, char **argv) {
 			}else{
 
 				printf("Please wait for opponent to enter word ...\n");
-                recv(sd,&guessSize, sizeof(uint8_t),0);
-                if(guessSize == 0){
+                recv(sd,&wordSize, sizeof(uint8_t),0);
+                if(wordSize == 0){
                     printf("Opponent lost the round!\n");
                     break;
                 }else{
-                    recv(sd, buf, guessSize, 0);
-                    buf[guessSize] = '\0';
-					printf("Opponent entered: %s", buf);
+                    recv(sd, buf, wordSize, 0);
+					buf[wordSize] = '\0';
+					printf("Opponent entered: %s\n", buf);
 					turnFlag = 1;
 				}
 			}
 		}
 	
+	}
+
+	if(player == '1'){
+		if(p1Score == 3){
+			printf("You won!\n");
+		}else{
+			printf("You lost!\n");
+		}
+	}else{
+		if(p2Score == 3){
+			printf("You won!\n");
+		}else{
+			printf("You lost!\n");
+		}
 	}
 }
 

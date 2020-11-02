@@ -14,7 +14,8 @@
 #define QLEN 6 /* size of request queue */ 
 trieNode *dictionary;
 
-int validWord(trieNode* usedWords, char* word, char* board){
+int validWord(trieNode * usedWords, char* word, char* board){
+
 	char newBoard[sizeof(board)];
 	size_t destination_size = sizeof(board);
 
@@ -22,11 +23,11 @@ int validWord(trieNode* usedWords, char* word, char* board){
 	newBoard[destination_size] = '\0';
 
     if(!trieSearch(dictionary, word)){
-		return 1;
+		return 0;
 	}
 
 	if(trieSearch(usedWords, word)){
-		return 1;
+		return 0;
 	}
 
 	for(int i = 0; i < strlen(word); i++){
@@ -37,7 +38,6 @@ int validWord(trieNode* usedWords, char* word, char* board){
             if(wordChar == newBoard[j]){
                 flag = 1;
                 newBoard[j] = ' ';
-                printf("%s\n", newBoard);
                 break;
             }
         }
@@ -46,7 +46,6 @@ int validWord(trieNode* usedWords, char* word, char* board){
             return 0;
         }
 	}
-
     return 1;
 }
 
@@ -88,14 +87,18 @@ void game(int p1, int p2, int boardSize){
     uint8_t p2Score = 0;
 
 	while(p1Score != 3 && p2Score != 3){
-		send(p1, &p1Score, sizeof(p1Score), 0);
-		send(p1, &p2Score, sizeof(p2Score), 0);
-		send(p2, &p1Score, sizeof(p1Score), 0);
-		send(p2, &p2Score, sizeof(p2Score), 0);
 
-		send(p1, &round, sizeof(round), 0);
-		send(p2, &round, sizeof(round), 0);
+		//Send the scores to both players
+		send(p1, &p1Score, sizeof(uint8_t), 0);
+		send(p1, &p2Score, sizeof(uint8_t), 0);
+		send(p2, &p1Score, sizeof(uint8_t), 0);
+		send(p2, &p2Score, sizeof(uint8_t), 0);
 
+		//Send the round
+		send(p1, &round, sizeof(uint8_t), 0);
+		send(p2, &round, sizeof(uint8_t), 0);
+
+		//Generate Board and send it
 		char* board = generateBoard(boardSize);
 		send(p1, board, boardSize, 0);
 		send(p2, board, boardSize, 0);
@@ -110,42 +113,54 @@ void game(int p1, int p2, int boardSize){
 
 		trieNode *usedWords = trieCreate();
 
+		//Send Y and N to correct clients
+		send(active, &first, sizeof(char), 0);
+		send(inactive, &second, sizeof(char), 0);
+
+		//TURNS
 		for(;;){
-			send(active, &first, sizeof(char), 0);
-			send(inactive, &second, sizeof(char), 0);
 
-			int wordSize;
-			recv(active, &wordSize, sizeof(wordSize), 0);
+			//Get size of guessed word
+			uint8_t wordSize;
+			recv(active, &wordSize, sizeof(uint8_t), 0);
 
+			//Get word
 			char buf[1000];
-			recv(active, &buf, sizeof(wordSize), 0);
-
-			printf("recieved word: %s\n", buf);
+			recv(active, buf, wordSize, 0);
+			buf[wordSize] = '\0';
 
 			if(validWord(usedWords, buf, board)){
-				trieInsert(usedWords, buf);
-				uint8_t one = 1;
-				uint8_t bufSize = strlen(buf);
-				send(active, &one, sizeof(one), 0);
 
-				send(inactive, &bufSize, sizeof(bufSize), 0);
-				send(inactive, buf, bufSize, 0);
+				//Valid word gets put in Trie
+				trieInsert(usedWords, buf);
+
+				//Send 1 to active player
+				uint8_t one = 1;
+				send(active, &one, sizeof(uint8_t), 0);
+
+				//Send word size and word to inactive player
+				send(inactive, &wordSize, sizeof(uint8_t), 0);
+				send(inactive, buf, wordSize, 0);
 
 			}else{
-
+				
+				//Send Zeros to both players
 				uint8_t zero = 0;
-				send(active, &zero, sizeof(zero), 0);
-				send(inactive, &zero, sizeof(zero), 0);
+				send(active, &zero, sizeof(uint8_t), 0);
+				send(inactive, &zero, sizeof(uint8_t), 0);
+
+				//Increase score of inactive player
 				if(inactive == p1){
 					p1Score+=1;
 				}else{
 					p2Score+=1;
 				}
 
+				//turn is over
 				break;
 			}
 
-
+			//Swap active and inactive player
 			if(active == p1){
 				active = p2;
 				inactive = p1;
@@ -154,8 +169,17 @@ void game(int p1, int p2, int boardSize){
 				inactive = p2;
 			}
 		}
-
+		//Increment round #
+		round++;
+		free(board);
+		free(usedWords);
 	}
+
+	//Send the scores to both players
+	send(p1, &p1Score, sizeof(uint8_t), 0);
+	send(p1, &p2Score, sizeof(uint8_t), 0);
+	send(p2, &p1Score, sizeof(uint8_t), 0);
+	send(p2, &p2Score, sizeof(uint8_t), 0);
 
 }
 
@@ -182,7 +206,7 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	dictionary = trieCreate();
+	dictionary = trieCreate(); 
 
     FILE* filePointer;
     int bufferLength = 1000;
@@ -246,25 +270,30 @@ int main(int argc, char **argv) {
 
 
 	while (1) {
+
+		//Player 1 Connect
 		alen = sizeof(cad1);
 		if ((sd2=accept(sd, (struct sockaddr *)&cad1, &alen)) < 0) {
 			fprintf(stderr, "Error: Accept failed\n");
 			exit(EXIT_FAILURE);
 		}
         
+		//Send Player #, Board Size, and Seconds per Round
 		char playerType = '1';
-        send(sd2,&playerType,sizeof(playerType),0);
+        send(sd2,&playerType,sizeof(char),0);
         send(sd2,&boardSize,sizeof(uint8_t),0);
         send(sd2,&seconds,sizeof(uint8_t),0);
 
+		//Player 2 Connect
         alen = sizeof(cad2);
 		if ((sd3=accept(sd, (struct sockaddr *)&cad2, &alen)) < 0) {
 			fprintf(stderr, "Error: Accept failed\n");
 			exit(EXIT_FAILURE);
 		}
 
+		//Send Player #, Board Size, and Seconds per Round
 		playerType = '2';
-        send(sd3,&playerType,sizeof(playerType),0);
+        send(sd3,&playerType,sizeof(char),0);
         send(sd3,&boardSize,sizeof(uint8_t),0);
         send(sd3,&seconds,sizeof(uint8_t),0);
 

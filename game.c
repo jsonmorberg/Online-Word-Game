@@ -24,7 +24,8 @@ struct Player{
 };
 
 
-int validWord(char* word, char* board){
+int validWord(trieNode * usedWords, char* word, char* board){
+
 	char newBoard[sizeof(board)];
 	size_t destination_size = sizeof(board);
 
@@ -32,11 +33,11 @@ int validWord(char* word, char* board){
 	newBoard[destination_size] = '\0';
 
     if(!trieSearch(dictionary, word)){
-		return 1;
+		return 0;
 	}
 
 	if(trieSearch(usedWords, word)){
-		return 1;
+		return 0;
 	}
 
 	for(int i = 0; i < strlen(word); i++){
@@ -47,7 +48,6 @@ int validWord(char* word, char* board){
             if(wordChar == newBoard[j]){
                 flag = 1;
                 newBoard[j] = ' ';
-                printf("%s\n", newBoard);
                 break;
             }
         }
@@ -89,20 +89,9 @@ char* generateBoard(int boardSize){
 }
 
 int main(int argc, char **argv) {
-    uint16_t port;
-    uint8_t boardSize;
-    uint8_t seconds;
-    char* dictionaryPath;
-
-
-    if( argc != 5 ) {
-		fprintf(stderr,"Error: Wrong number of arguments\n");
-		fprintf(stderr,"usage:\n");
-		fprintf(stderr,"TODO\n");
-		exit(EXIT_FAILURE);
-    }
 
     dictionary = trieCreate();
+    trieNode * usedWords = trieCreate();
 
     FILE* filePointer;
     int bufferLength = 1000;
@@ -114,51 +103,20 @@ int main(int argc, char **argv) {
         trieInsert(dictionary, buffer);
     }
 
-    fclose(filePointer);    
+    fclose(filePointer);  
 
-    port = atoi(argv[1]);
-    //PORT STUFF
+    char* board = generateBoard(5);
+    printf("%s\n", board);
+    for(;;){
+    char charbuf[100];
+    printf("Your turn, enter word: ");
+    scanf("%s", charbuf);
 
-    boardSize = atoi(argv[2]);
-    seconds = atoi(argv[3]);
-    dictionaryPath = argv[4];
-
-    struct Player player1;
-    struct Player player2;
-
-    int playerOneScore = 0;
-    int playerTwoScore = 0;
-
-    player1.playerType = '1';
-    player1.boardSize = boardSize;
-    player1.seconds = seconds;
-
-    player2.playerType = '2';
-    player2.boardSize = boardSize;
-    player2.seconds = seconds;
-
-    int round = 1;
-    //while(playerOneScore != 3 && playerTwoScore != 3){
-    
-       player1.playerOneScore = playerOneScore;
-       player1.round = round;
-
-       player2.playerTwoScore = playerTwoScore;
-       player2.round = round;
-
-       char* board = generateBoard(boardSize); 
-       board[strlen(board)] = '\0'; 
-       printf(board);
-
-       char charbuf[1000];
-       scanf("%s", charbuf);
-       
-       printf("%d\n", validWord(charbuf, board));
-
-
-
-    //}
-
-
-    
+        if(validWord(usedWords, charbuf, board)){
+            printf("Valid Word!\n");
+            trieInsert(usedWords, charbuf);
+        }else{
+            printf("Invalid Word!\n");
+        }  
+    }
 }
