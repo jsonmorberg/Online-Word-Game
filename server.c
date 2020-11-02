@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-
+	pid_t pid;
 	while (1) {
 
 		//Player 1 Connect
@@ -297,7 +297,19 @@ int main(int argc, char **argv) {
         send(sd3,&boardSize,sizeof(uint8_t),0);
         send(sd3,&seconds,sizeof(uint8_t),0);
 
-		game(sd2, sd3, boardSize);
+		pid = fork();
+
+		if(pid < 0){
+			fprintf(stderr, "Error: Fork error\n"); 
+            exit(EXIT_FAILURE); 
+		}
+
+		if(pid == 0){
+			close(sd);
+			game(sd2, sd3, boardSize);
+			close(sd2);
+			close(sd3);
+		}
 	}
 }
 
