@@ -7,7 +7,7 @@ As far as we can tell everything seems to work. Timeout, game logic, multiple cl
 
 2) Any assumptions you made for things not described in the specifications.
 
-We assume that the server does not need to tell the second client that the first client has disconnected. We assume you don't need to correct for case. If the case is wrong, the answer is wrong because it is not in the dict. 
+We assume that the server does not need to tell the second client that the first client has disconnected. We assume you don't need to correct for case. If the case is wrong, the answer is wrong because it is not in the dict. We also made it so the server prints out a little statment if a client disconnects even though this was not specified.
 
 3) In a few sentences, describe how you tested that your code was working.
 We Played multiple rounds of the game. Disconnected in different orders. Incrimetally built our project so each piece was working separately before we integrated it and beforehand made sure edge cases such as empty tries and round restarts were handled correctly. 
