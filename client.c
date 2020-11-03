@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <poll.h>
 
 
 int main( int argc, char **argv) {
@@ -18,6 +19,7 @@ int main( int argc, char **argv) {
 	int port; /* protocol port number */
 	char *host; /* pointer to host name */
 	char buf[1000]; /* buffer for data from the server */
+	struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI }; 
 
 	memset((char *)&sad,0,sizeof(sad)); /* clear sockaddr structure */
 	sad.sin_family = AF_INET; /* set family to Internet */
@@ -78,6 +80,8 @@ int main( int argc, char **argv) {
 
 	uint8_t seconds;
 	recv(sd,&seconds,sizeof(uint8_t),0);
+	
+	int timeout = seconds * 1000;
 
 	//Print Game info
 	if(player == '1'){
@@ -123,26 +127,39 @@ int main( int argc, char **argv) {
 		char turn;
 		recv(sd, &turn, sizeof(char), 0);
 
+		//Check turn
 		int turnFlag = 0;
 		if(turn == 'Y'){
 			turnFlag = 1;
 		}
 
+		//Gameplay Loop
 		for(;;){
 			char charbuf[1000];
 			uint8_t wordSize;
     		uint8_t outcome;
 
+			//Active
 			if(turnFlag){
-
+				
+				//Use poll to add timeout to user input
 				printf("Your turn, enter word: ");
-                scanf("%s", charbuf);
+				fflush(stdout);
 
-                wordSize = strlen(charbuf);
+				if(poll(&mypoll, 1, timeout))    { 
 
-                send(sd, &wordSize, sizeof(uint8_t), 0);
-                send(sd, charbuf, wordSize,0);
+					scanf("%s", charbuf);  
 
+					wordSize = strlen(charbuf);
+					send(sd, &wordSize, sizeof(uint8_t), 0);
+                	send(sd, charbuf, wordSize,0);
+				} else { 
+					printf("TIMED OUT\n");
+					wordSize = 0;
+					send(sd, &wordSize, sizeof(uint8_t), 0);
+				} 
+
+				//Recieve outcome of word validation
                 recv(sd, &outcome, sizeof(uint8_t),0);
                 if(outcome){
                     printf("Valid word!\n");
@@ -152,8 +169,10 @@ int main( int argc, char **argv) {
                     break;
                 }
 
+			//Inactive
 			}else{
-
+				
+				//Wait for server's response
 				printf("Please wait for opponent to enter word ...\n");
                 recv(sd,&wordSize, sizeof(uint8_t),0);
                 if(wordSize == 0){
@@ -170,6 +189,7 @@ int main( int argc, char **argv) {
 	
 	}
 
+	//Print result
 	if(player == '1'){
 		if(p1Score == 3){
 			printf("You won!\n");
@@ -183,5 +203,6 @@ int main( int argc, char **argv) {
 			printf("You lost!\n");
 		}
 	}
+	close(sd);
 }
 
