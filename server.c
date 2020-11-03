@@ -150,7 +150,7 @@ void game(int p1, int p2, int boardSize){
 			if(connection == 0){
 				close(active);
 				close(inactive);
-				printf("Client disconnected from session, game has ended for that session")
+				printf("Client disconnected from session, game has ended for that session");
 				exit(EXIT_SUCCESS);
 			}
 
