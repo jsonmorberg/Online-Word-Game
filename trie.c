@@ -71,4 +71,3 @@ int trieSearch(trieNode *root, const char *key)
 
     return (pCrawl != NULL && pCrawl->isEndOfWord);
 } 
-
