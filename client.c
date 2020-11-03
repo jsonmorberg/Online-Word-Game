@@ -8,42 +8,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <poll.h>
 
-int validWord(trieNode* usedWords, char* word, char* board){
-	char newBoard[sizeof(board)];
-	size_t destination_size = sizeof(board);
-
-	strncpy(newBoard, board, destination_size);
-	newBoard[destination_size] = '\0';
-
-    if(!trieSearch(dictionary, word)){
-		return 1;
-	}
-
-	if(trieSearch(usedWords, word)){
-		return 1;
-	}
-
-	for(int i = 0; i < strlen(word); i++){
-		char wordChar = word[i];
-		int flag = 0;
-
-		for(int j = 0; j < strlen(newBoard); j++){
-            if(wordChar == newBoard[j]){
-                flag = 1;
-                newBoard[j] = ' ';
-                printf("%s\n", newBoard);
-                break;
-            }
-        }
-
-        if(flag == 0){
-            return 0;
-        }
-	}
-
-    return 1;
-}
 
 int main( int argc, char **argv) {
 	struct hostent *ptrh; /* pointer to a host table entry */
@@ -52,14 +18,9 @@ int main( int argc, char **argv) {
 	int sd; /* socket descriptor */
 	int port; /* protocol port number */
 	char *host; /* pointer to host name */
-	int n; /* number of characters read */
 	char buf[1000]; /* buffer for data from the server */
-    uint8_t boardSize;
-    uint8_t seconds;
-    uint8_t player;
-    uint8_t round;
-    uint8_t score;
-    uint8_t opScore;
+	struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI }; 
+
 	memset((char *)&sad,0,sizeof(sad)); /* clear sockaddr structure */
 	sad.sin_family = AF_INET; /* set family to Internet */
 
@@ -109,23 +70,139 @@ int main( int argc, char **argv) {
 		fprintf(stderr,"connect failed\n");
 		exit(EXIT_FAILURE);
 	}
-    recv(sd,&player,sizeof(uint8_t),0);
-    recv(sd,&boardSize,sizeof(uint8_t),0);
-    recv(sd,&seconds,sizeof(uint8_t),0);
-    printf("%d, %d, %d\n", player,  boardSize, seconds);
-    score = 69;
-    //GAME START
-    recv(sd, &round, sizeof(uint8_t), 0);
-    printf("starting round %d\n", round);
-    send(sd, &score, sizeof(uint8_t), 0);
-    recv(sd, &opScore, sizeof(uint8_t), 0);
-    printf("my = %d op = %d\n",score, opScore);
-    char board[boardSize];
-    recv(sd, board, boardSize,0);
-    board[boardSize] = '\0';
-    printf("%s\n", board);
-    //recive board
+
+	//Recieve Player #, Board Size, and Seconds per Round
+	char player;
+	recv(sd, &player, sizeof(char), 0);
+
+	uint8_t boardSize;
+	recv(sd,&boardSize,sizeof(uint8_t),0);
+
+	uint8_t seconds;
+	recv(sd,&seconds,sizeof(uint8_t),0);
+	
+	int timeout = seconds * 1000;
+
+	//Print Game info
+	if(player == '1'){
+		printf("You are Player 1... the game will begin when Player 2 joins...\n");
+	}else{
+		printf("You are Player 2...\n");
+	}
+
+	printf("Board size: %d\n", boardSize);
+	printf("Seconds per turn: %d\n", seconds);
+
+	uint8_t p1Score;
+	uint8_t p2Score;
+	uint8_t round;
+	char buffer[1000];
+
+	//LOOP FOR ROUNDS
+	for(;;){
+
+		//Get scores, round # and board
+		recv(sd, &p1Score, sizeof(uint8_t), 0);
+		recv(sd, &p2Score, sizeof(uint8_t), 0);
+		
+		if(p1Score == 3 || p2Score == 3){
+			break;
+		}
+
+		recv(sd, &round, sizeof(uint8_t), 0);
+		recv(sd, buffer, boardSize, 0);
+
+		//Print round info
+		printf("\n");
+		printf("Round is %d...\n", round);
+		printf("Score is %d-%d\n", p1Score, p2Score);
+		printf("Board: ");
+
+		for(int i = 0; i < boardSize; i++){
+			printf("%c ", buffer[i]);
+		}
+		printf("\n");
+
+		//Receive turn
+		char turn;
+		recv(sd, &turn, sizeof(char), 0);
+
+		//Check turn
+		int turnFlag = 0;
+		if(turn == 'Y'){
+			turnFlag = 1;
+		}
+
+		//Gameplay Loop
+		for(;;){
+			char charbuf[1000];
+			uint8_t wordSize;
+    		uint8_t outcome;
+
+			//Active
+			if(turnFlag){
+				
+				//Use poll to add timeout to user input
+				printf("Your turn, enter word: ");
+				fflush(stdout);
+
+				if(poll(&mypoll, 1, timeout))    { 
+
+					scanf("%s", charbuf);  
+
+					wordSize = strlen(charbuf);
+					send(sd, &wordSize, sizeof(uint8_t), 0);
+                	send(sd, charbuf, wordSize,0);
+				} else { 
+					printf("TIMED OUT\n");
+					wordSize = 0;
+					send(sd, &wordSize, sizeof(uint8_t), 0);
+				} 
+
+				//Recieve outcome of word validation
+                recv(sd, &outcome, sizeof(uint8_t),0);
+                if(outcome){
+                    printf("Valid word!\n");
+					turnFlag = 0;
+                }else{
+                    printf("Invalid Word\n");
+                    break;
+                }
+
+			//Inactive
+			}else{
+				
+				//Wait for server's response
+				printf("Please wait for opponent to enter word ...\n");
+                recv(sd,&wordSize, sizeof(uint8_t),0);
+                if(wordSize == 0){
+                    printf("Opponent lost the round!\n");
+                    break;
+                }else{
+                    recv(sd, buf, wordSize, 0);
+					buf[wordSize] = '\0';
+					printf("Opponent entered: %s\n", buf);
+					turnFlag = 1;
+				}
+			}
+		}
+	
+	}
+
+	//Print result
+	if(player == '1'){
+		if(p1Score == 3){
+			printf("You won!\n");
+		}else{
+			printf("You lost!\n");
+		}
+	}else{
+		if(p2Score == 3){
+			printf("You won!\n");
+		}else{
+			printf("You lost!\n");
+		}
+	}
 	close(sd);
-	exit(EXIT_SUCCESS);
 }
 
