@@ -115,6 +115,7 @@ int main( int argc, char **argv) {
 		//Print round info
 		printf("\n");
 		printf("Round is %d...\n", round);
+		// Order depends on which player you are
 		printf("Score is %d-%d\n", p1Score, p2Score);
 		printf("Board: ");
 
@@ -128,11 +129,7 @@ int main( int argc, char **argv) {
 		recv(sd, &turn, sizeof(char), 0);
 
 		//Check turn
-		int turnFlag = 0;
-		if(turn == 'Y'){
-			turnFlag = 1;
-		}
-
+		int turnFlag = (turn == 'Y');
 		//Gameplay Loop
 		for(;;){
 			char charbuf[1000];
