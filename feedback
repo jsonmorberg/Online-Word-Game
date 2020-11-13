@@ -1,0 +1,35 @@
+bluejay:
+You have until the 14th to review a recording of my grading here:
+
+- https://asciinema.org/a/2kH3nYQWVPrTyKgVbWiiA1e6e
+
+The files to generate asciinema videos are in new git branches in your repository if you want them for later.
+I also made inline comments in your code in the "grading" branch.
+
+You don't free a lot of memory.
+You also strlen over something that isn't null terminated:
+
+==18953== Conditional jump or move depends on uninitialised value(s)
+==18953==    at 0x4C32CF9: strlen (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==18953==    by 0x109DF7: trieSearch (trie.c:58)
+==18953==    by 0x108EA0: validWord (server.c:27)
+==18953==    by 0x1093DF: game (server.c:165)
+==18953==    by 0x109C99: main (server.c:369)
+==18953==
+==18953==
+==18953== HEAP SUMMARY:
+==18953==     in use at exit: 319,311,904 bytes in 395,188 blocks
+==18953==   total heap usage: 395,244 allocs, 56 frees, 319,332,365 bytes allocated
+==18953==
+==18953== LEAK SUMMARY:
+==18953==    definitely lost: 808 bytes in 1 blocks
+==18953==    indirectly lost: 1,616 bytes in 2 blocks
+==18953==      possibly lost: 0 bytes in 0 blocks
+==18953==    still reachable: 319,309,480 bytes in 395,185 blocks
+==18953==         suppressed: 0 bytes in 0 blocks
+
+The scores aren't displayed right, 1-0 indicates "I have 1 point, other player has 0 points" instead of "player 1 has 1 point" "player 2 has 0 points".
+
+Indentation looks pretty inconsistent.
+
+Good job overall!
