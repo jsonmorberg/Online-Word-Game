@@ -33,3 +33,13 @@ The scores aren't displayed right, 1-0 indicates "I have 1 point, other player h
 Indentation looks pretty inconsistent.
 
 Good job overall!
++-------------+-------------------------------------------------+----------+--------------+
+| Test        | Subtest                                         | Points   | p2-bluejay   |
+|-------------+-------------------------------------------------+----------+--------------|
+| Commit ID   |                                                 |          | d5e5f2b      |
+| Point total |                                                 |          | 68           |
+| Point total |                                                 |          | 90.67%       |
+| Client:     | Doesn't display the correct game and round info | -1.0     | -1           |
+| Overall     | Insufficient memory management                  | -5.0     | -5           |
+| Overall     | No proper indentation                           | -1.0     | -1           |
++-------------+-------------------------------------------------+----------+--------------+
